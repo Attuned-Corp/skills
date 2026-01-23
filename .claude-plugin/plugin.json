@@ -1,0 +1,10 @@
+{
+  "name": "span",
+  "description": "Query engineering, project management, and investment data from the Span Knowledge Graph API",
+  "version": "1.0.0",
+  "author": {
+    "name": "Span"
+  },
+  "homepage": "https://span.app",
+  "repository": "https://github.com/Attuned-Corp/skills"
+}

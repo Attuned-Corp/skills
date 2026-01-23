@@ -1,0 +1,26 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "span-skills",
+  "version": "1.0.0",
+  "description": "Claude Code plugins for querying engineering, project management, and investment data from the Span Knowledge Graph API",
+  "owner": {
+    "name": "Span",
+    "url": "https://span.app"
+  },
+  "homepage": "https://github.com/Attuned-Corp/skills",
+  "repository": "https://github.com/Attuned-Corp/skills",
+  "license": "MIT",
+  "plugins": [
+    {
+      "name": "span",
+      "description": "Query engineering, project management, and investment data from the Span Knowledge Graph API",
+      "version": "1.0.0",
+      "author": {
+        "name": "Span"
+      },
+      "source": "./",
+      "category": "productivity",
+      "strict": false
+    }
+  ]
+}
