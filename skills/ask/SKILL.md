@@ -1,6 +1,7 @@
 ---
 name: ask
 description: Query engineering, project management, and investment data from the Span Knowledge Graph API. Includes pull requests, commits, deployments, epics, issues, sprints, investments, teams, and people.
+allowed-tools: Read, Write, Bash(*), Grep, Glob
 triggers:
   - PRs merged
   - pull requests
@@ -110,7 +111,9 @@ The Personal Access Token (PAT) must be stored in `auth.json`:
 
 ## Reading the Token
 
-Before making API calls, read the token:
+**IMPORTANT: Never use the Read tool to read auth.json.** This would expose the token in the conversation.
+
+Instead, use `jq` with command substitution directly in curl commands to keep the token secure:
 
 ```bash
 SPAN_DIR="${SPAN_CONFIG_DIR:-$HOME/.spanrc}"
