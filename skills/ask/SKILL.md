@@ -73,7 +73,7 @@ On first invocation, check if the skill has been configured:
 
 ```bash
 SPAN_DIR="${SPAN_CONFIG_DIR:-$HOME/.spanrc}"
-cat "$SPAN_DIR/auth.json" 2>/dev/null
+jq -e '.token' "$SPAN_DIR/auth.json" > /dev/null 2>&1 && echo "configured" || echo "not configured"
 ```
 
 ### If Auth File Does Not Exist: Run Setup
@@ -109,11 +109,17 @@ The Personal Access Token (PAT) must be stored in `auth.json`:
 }
 ```
 
+## Token Security (CRITICAL)
+
+**NEVER expose the Personal Access Token in any output.** Follow these rules strictly:
+
+1. **Never use the Read tool** on `auth.json` - use `jq` with command substitution instead (see "Reading the Token" below)
+2. **Never echo or print the token** - no `echo $TOKEN`, `printf`, or similar commands
+3. **Never include the token in error messages** or explanations to the user
+
 ## Reading the Token
 
-**IMPORTANT: Never use the Read tool to read auth.json.** This would expose the token in the conversation.
-
-Instead, use `jq` with command substitution directly in curl commands to keep the token secure:
+Use `jq` with command substitution directly in curl commands to keep the token secure:
 
 ```bash
 SPAN_DIR="${SPAN_CONFIG_DIR:-$HOME/.spanrc}"

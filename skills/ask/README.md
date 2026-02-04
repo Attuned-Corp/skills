@@ -24,6 +24,17 @@ This skill provides access to the Span Knowledge Graph API for querying:
 
 ## Prerequisites
 
+### Required Tools
+
+The following command-line tools must be installed:
+
+| Tool | Purpose | Installation |
+|------|---------|--------------|
+| `curl` | API requests | Usually pre-installed. If not: `brew install curl` (macOS) or `apt install curl` (Linux) |
+| `jq` | JSON parsing | `brew install jq` (macOS) or `apt install jq` (Linux) |
+
+### Authentication
+
 You need a Span Personal Access Token. On first use, the skill will guide you through setup.
 
 ## Configuration
@@ -34,6 +45,14 @@ The skill stores configuration in `~/.spanrc/` by default:
 ~/.spanrc/
 ├── auth.json           # Your token (you create this)
 └── metadata-cache.json # API metadata (auto-generated)
+```
+
+### File Permissions
+
+The auth file contains your personal access token. Set restrictive permissions to prevent other users from reading it:
+
+```bash
+chmod 600 ~/.spanrc/auth.json
 ```
 
 ### Custom Location
