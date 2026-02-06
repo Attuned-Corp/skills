@@ -1,10 +1,6 @@
-# Span Plugin for Claude Code
+# Span Skills
 
-A Claude Code plugin for querying engineering, project management, and investment data from the Span Knowledge Graph API.
-
-## What is This?
-
-This is a Claude Code **plugin** that provides skills for interacting with the Span API. Skills are invoked with the `/span:<skill-name>` prefix.
+Skills for querying engineering, project management, and investment data from the Span Knowledge Graph API. Compatible with Claude Code and Cursor.
 
 ## Available Skills
 
@@ -16,7 +12,9 @@ This is a Claude Code **plugin** that provides skills for interacting with the S
 
 ## Installation
 
-### Option 1: Marketplace (Recommended)
+### Claude Code
+
+#### Option 1: Marketplace (Recommended)
 
 Install directly from within Claude Code:
 
@@ -32,7 +30,7 @@ claude plugin marketplace add Attuned-Corp/skills
 claude plugin install span@span-skills
 ```
 
-### Option 2: Clone and Symlink
+#### Option 2: Clone and Symlink
 
 For local development or customization:
 
@@ -41,7 +39,7 @@ git clone https://github.com/Attuned-Corp/skills.git ~/span-plugin
 ln -s ~/span-plugin ~/.claude/plugins/span
 ```
 
-### Option 3: Plugin Directory Flag
+#### Option 3: Plugin Directory Flag
 
 Load the plugin for a single session:
 
@@ -50,7 +48,7 @@ git clone https://github.com/Attuned-Corp/skills.git ~/span-plugin
 claude --plugin-dir ~/span-plugin
 ```
 
-### Option 4: Git Submodule
+#### Option 4: Git Submodule
 
 For teams who want to pin a specific version:
 
@@ -59,7 +57,7 @@ git submodule add https://github.com/Attuned-Corp/skills.git vendor/span-plugin
 claude --plugin-dir vendor/span-plugin
 ```
 
-### Verifying Installation
+#### Verifying Installation
 
 After installation, verify the plugin is loaded:
 
@@ -69,19 +67,41 @@ After installation, verify the plugin is loaded:
 
 You should see `span` in the list of installed plugins.
 
+### Cursor
+
+Cursor natively supports skills using the same `SKILL.md` format. Clone the repo and symlink the skills into your project or user-level skills directory:
+
+```bash
+git clone https://github.com/Attuned-Corp/skills.git ~/span-skills
+
+# Project-level (add to a specific project)
+ln -s ~/span-skills/skills/ask .cursor/skills/ask
+
+# Or user-level (available in all projects)
+ln -s ~/span-skills/skills/ask ~/.cursor/skills/ask
+```
+
+For more details on how Cursor discovers and invokes skills or alternative methods of installation, see the [Cursor Skills documentation](https://cursor.com/docs/context/skills).
+
 ## Usage
 
 ### Direct Invocation
 
-Invoke skills explicitly with `/span:<skill-name>`:
+In Claude Code:
 
 ```
 /span:ask
 ```
 
+In Cursor, type `/` followed by the skill name in Agent chat:
+
+```
+/ask
+```
+
 ### Natural Language (Automatic)
 
-Claude automatically activates the skill when you ask relevant questions:
+The AI agent automatically activates the skill when you ask relevant questions:
 
 | You ask... | What happens |
 |------------|--------------|
