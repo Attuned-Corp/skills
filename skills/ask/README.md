@@ -1,26 +1,16 @@
 # ask
 
-Query and fetch data from the Span Knowledge Graph API.
+Query Span for organizational observability.
 
 ## What it Does
 
-This skill provides access to the Span Knowledge Graph API for querying:
+This skill queries Span across five domains:
 
-**Engineering Data:**
-- Pull requests, commits, deployments
-- Repositories and services
-- Engineering metrics (cycle time, throughput, etc.)
-
-**Project Management:**
-- Epics, issues, and sprints
-- Project tracking and progress
-
-**Investment & Planning:**
-- Investment allocations and tracking
-
-**People & Teams:**
-- Team structures and members
-- Individual contributor metrics
+- **Productivity** — cycle time, throughput, review metrics, onboarding
+- **DORA** — deployment frequency, lead time, MTTR, change failure rate
+- **Investment** — effort allocation, workstreams, cost capitalization
+- **AI Transformation** — AI code ratio, adoption rates, spend
+- **Calendar** — focus time, meeting load, maker time
 
 ## Prerequisites
 
@@ -37,14 +27,32 @@ The following command-line tools must be installed:
 
 You need a Span Personal Access Token. On first use, the skill will guide you through setup.
 
+## Skill Structure
+
+```
+ask/
+├── SKILL.md                          # Core skill prompt
+├── README.md
+├── scripts/
+│   ├── check-config.sh               # Configuration & version check
+│   ├── fetch-metadata.sh             # Metadata fetch & caching
+│   ├── query.sh                      # API query wrapper
+│   └── api-version                   # Expected API version (empty = pre-versioning)
+└── references/
+    ├── api-reference.md              # Full API endpoint docs, filters, time dimensions
+    ├── workflows.md                  # Step-by-step query examples
+    └── domains.md                    # Domain-specific caveats & patterns
+```
+
 ## Configuration
 
 The skill stores configuration in `~/.spanrc/` by default:
 
 ```
 ~/.spanrc/
-├── auth.json           # Your token (you create this)
-└── metadata-cache.json # API metadata (auto-generated)
+├── auth.json              # Your token (you create this)
+├── metadata-cache.json    # API metadata (auto-generated)
+└── api-version-detected   # API version from last metadata fetch (auto-generated)
 ```
 
 ### File Permissions
@@ -82,6 +90,10 @@ The Span API metadata (available assets, fields, metrics) is cached locally afte
 
 - **First query**: Fetches and caches metadata, then runs your query
 - **Subsequent queries**: Uses cached metadata (no extra API calls)
+
+## API Compatibility
+
+The skill checks for API version changes on each invocation. If the Span API introduces a new version that the skill doesn't recognize, you'll see a warning prompting you to update the skill.
 
 ## Commands
 

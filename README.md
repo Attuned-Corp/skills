@@ -1,14 +1,12 @@
 # Span Skills
 
-Skills for querying engineering, project management, and investment data from the Span Knowledge Graph API. Compatible with Claude Code and Cursor.
+Skills for querying Span. Compatible with Claude Code and Cursor.
 
 ## Available Skills
 
 | Skill | Command | Description |
 |-------|---------|-------------|
-| [ask](skills/ask/) | `/span:ask` | Query engineering, project management, and investment data |
-
-**Triggers:** PRs, cycle time, deployments, epics, issues, sprints, investments, teams
+| [ask](skills/ask/) | `/span:ask` | Query engineering metrics, team velocity, PRs, deployments, investments, and more |
 
 ## Installation
 
@@ -126,8 +124,9 @@ The plugin stores configuration in `~/.spanrc/` by default:
 
 ```
 ~/.spanrc/
-├── auth.json           # Your token (you create this)
-└── metadata-cache.json # API metadata (auto-generated)
+├── auth.json              # Your token (you create this)
+├── metadata-cache.json    # API metadata (auto-generated)
+└── api-version-detected   # API version from last metadata fetch (auto-generated)
 ```
 
 To use a custom location, set the `SPAN_CONFIG_DIR` environment variable:
