@@ -25,7 +25,8 @@ Discover available assets, their fields, metrics, relations, and dimensions. **U
 ```bash
 curl -s -X GET "https://api.span.app/next/metadata/assets" \
   -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json"
+  -H "Content-Type: application/json" \
+  -H "x-span-client-meta: skill/2026-04-16"
 ```
 
 **Response includes per asset:**
@@ -41,7 +42,8 @@ Get detailed metric information. **This is included in the assets metadata cache
 ```bash
 curl -s -X GET "https://api.span.app/next/metadata/metrics" \
   -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json"
+  -H "Content-Type: application/json" \
+  -H "x-span-client-meta: skill/2026-04-16"
 ```
 
 ### 3. Query Assets
@@ -52,6 +54,7 @@ Query assets with filters, metrics, and time dimensions.
 curl -s -X POST "https://api.span.app/next/assets/query?limit=25" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
+  -H "x-span-client-meta: skill/2026-04-16" \
   -d '{
     "select": ["PullRequest.title", "PullRequest.Author.email"],
     "filters": [

@@ -10,6 +10,7 @@
 set -euo pipefail
 
 SPAN_DIR="${SPAN_CONFIG_DIR:-$HOME/.spanrc}"
+CLIENT_META=$(cat "$(dirname "$0")/../VERSION")
 
 INPUT="${1:--}"
 LIMIT="${2:-}"
@@ -40,4 +41,5 @@ fi
 curl -s -X POST "https://api.span.app/next/assets/query${PARAMS}" \
   -K <(printf 'header = "Authorization: Bearer %s"' "$(jq -r '.token' "$SPAN_DIR/auth.json")") \
   -H "Content-Type: application/json" \
+  -H "x-span-client-meta: $CLIENT_META" \
   -d "$QUERY_JSON"
