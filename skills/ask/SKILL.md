@@ -167,6 +167,10 @@ Assets act as **aggregation points** (like SQL GROUP BY). Choose the appropriate
 
 **IMPORTANT:** There is always a Team called "Organization" that represents the entire organization. For org-wide metrics, query `Team` filtered by `Team.name = "Organization"`. Do NOT manually aggregate across repositories or people.
 
+**Common mistake — querying the wrong facade for "metric by X":**
+
+"PR count by repository" queried on the **PullRequest** facade returns one row per PR (each with count=1) — useless for aggregation. Query the **Repository** facade instead to get one row per repo with aggregated counts. Same applies to "by team" (use Team), "by person" (use Person). If "by X" refers to a **dimension** without its own facade (tenure, job level), use `mode: "groups"` instead.
+
 #### Team Hierarchy: `=` vs `DESCENDANT_OF` vs `IN`
 
 - **`=`** — Use for metrics on a single team. `Team.name = "Backend"` returns that team's aggregated metrics.
@@ -285,6 +289,7 @@ Convert accordingly:
 - **"What's our maker time like?"** → Query `Team` with focus time and fragmented time metrics
 
 ### Administration
+- **"What version is installed?" / "Check for updates"** → Run `$SKILL_SCRIPTS/check-version.sh`
 - **"Reload Span metadata"** → Run `$SKILL_SCRIPTS/fetch-metadata.sh`
 - **"Reconfigure Span skill"** → Delete `$SPAN_DIR/auth.json` and re-run onboarding
 

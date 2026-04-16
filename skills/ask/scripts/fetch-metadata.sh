@@ -5,6 +5,7 @@
 set -euo pipefail
 
 SPAN_DIR="${SPAN_CONFIG_DIR:-$HOME/.spanrc}"
+CLIENT_META=$(cat "$(dirname "$0")/../VERSION")
 HEADERS_FILE=$(mktemp)
 trap 'rm -f "$HEADERS_FILE"' EXIT
 
@@ -12,7 +13,8 @@ trap 'rm -f "$HEADERS_FILE"' EXIT
 # so it never appears as a shell variable or in the process argument list.
 curl -s -D "$HEADERS_FILE" -X GET "https://api.span.app/next/metadata/assets" \
   -K <(printf 'header = "Authorization: Bearer %s"' "$(jq -r '.token' "$SPAN_DIR/auth.json")") \
-  -H "Content-Type: application/json" > "$SPAN_DIR/metadata-cache.json"
+  -H "Content-Type: application/json" \
+  -H "x-span-client-meta: $CLIENT_META" > "$SPAN_DIR/metadata-cache.json"
 
 # Cache the API version from response headers for compatibility checking.
 API_VERSION=$(grep -i '^Span-Version:' "$HEADERS_FILE" | tr -d '\r' | awk '{print $2}')

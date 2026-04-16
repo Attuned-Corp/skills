@@ -35,6 +35,7 @@ ask/
 ├── README.md
 ├── scripts/
 │   ├── check-config.sh               # Configuration & version check
+│   ├── check-version.sh              # Skill version check (compares local vs GitHub)
 │   ├── fetch-metadata.sh             # Metadata fetch & caching
 │   ├── query.sh                      # API query wrapper
 │   └── api-version                   # Expected API version (empty = pre-versioning)
@@ -99,5 +100,6 @@ The skill checks for API version changes on each invocation. If the Span API int
 
 | Command | What it does |
 |---------|--------------|
+| "What version is installed?" | Shows installed version and checks GitHub for updates |
 | "Reload Span metadata" | Refreshes cached API metadata |
 | "Reconfigure Span skill" | Resets configuration and runs setup again |
