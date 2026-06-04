@@ -108,7 +108,7 @@ Each metric in the `metrics` array:
 | `=`, `!=`, `>`, `<`, `>=`, `<=` | Standard comparison |
 | `IN`, `NOT IN` | List membership (value is an array) |
 | `CONTAINS`, `NOT_CONTAINS` | Substring / field matching (**catalog fields only** — see note below) |
-| `DESCENDANT_OF` | Hierarchical tree traversal — expands a team and all its sub-teams (**roster discovery only**, see warning below) |
+| `DESCENDANT_OF` | Hierarchical tree traversal — expands a team and all its sub-teams (roster discovery, and the **deployment roll-up** on `Team.groupPath`; see notes below) |
 
 **CONTAINS / NOT_CONTAINS constraints:** These operators only work on catalog fields (e.g., `Repository.repositoryName`, `Team.path`, `PullRequest.title`). They are NOT supported on dimension or relation fields (e.g., `Person.Teams.name`). Use `=` or `IN` for those instead.
 
@@ -120,14 +120,25 @@ Each metric in the `metrics` array:
 ]}
 ```
 
-**DESCENDANT_OF — roster discovery only:**
+**DESCENDANT_OF — roster discovery:**
 
 `DESCENDANT_OF` expands a team to include all nested sub-teams. Use it to discover **people** in a team tree:
 ```json
 {"field": "Person.Teams.name", "operator": "DESCENDANT_OF", "value": "Engineering"}
 ```
 
-**WARNING:** Do NOT use `DESCENDANT_OF` for metric queries on `Team`. Parent team metrics already include sub-team data, so `DESCENDANT_OF` would cause double-counting. For metrics across a team hierarchy, query `Person` with `DESCENDANT_OF` on `Person.Teams.name` and attach metrics to individual people.
+**WARNING (most metrics):** Do NOT use `DESCENDANT_OF` for metric queries on `Team`. For most metrics, parent team metrics already include sub-team data (the `Team` facade rolls up hierarchically), so `DESCENDANT_OF` would double-count. For metrics across a team hierarchy, query `Person` with `DESCENDANT_OF` on `Person.Teams.name` and attach metrics to individual people.
+
+**EXCEPTION — deployment metrics:** deploys are attributed to teams, not people, so the `Person` pattern above doesn't apply, and `Team.name=` returns a team's **own** deploys only (no sub-teams). To roll a team **and all of its sub-teams** into one de-duplicated total, filter `DESCENDANT_OF` on **`Team.groupPath`** in **groups mode**:
+```json
+{
+  "mode": "groups",
+  "select": ["Team.groupPath"],
+  "metrics": [{ "metricId": "<deploy metric id>" }],
+  "filters": [{ "field": "Team.groupPath", "operator": "DESCENDANT_OF", "value": "<Team.path of the team>" }]
+}
+```
+Get `<Team.path>` first with `{"select":["Team.name","Team.path"]}`. `Team.groupPath` is filter-only (the subtree anchor, dropped from output — a breakdown on it returns a 400), and a groups-mode query can't mix deploy metrics with person metrics. See SKILL.md → "Deployment metrics across a team tree".
 
 **Finding top-level teams:**
 ```json
@@ -280,6 +291,8 @@ Response:
 ```
 
 With granularity, metrics become `[{time, value}, ...]` arrays as usual.
+
+**Special case — `Team.groupPath`:** this dimension is filter-only. It exists so a `DESCENDANT_OF` filter can roll a deployment metric over a team's subtree into one de-duplicated row; `select: ["Team.groupPath"]` is the suppressed anchor, not a breakdown axis, so the result has no `Team.groupPath` column — just the metric value. Using it as an actual breakdown returns a 400. See "Deployment metrics across a team tree".
 
 ## Organization-Level Queries
 

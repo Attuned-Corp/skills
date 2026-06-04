@@ -37,6 +37,15 @@
 2. Select `Person.email`, `Person.Teams.name`
 3. This expands "Platform" to include all nested sub-teams
 
+## "How many production deploys for the Platform team and all its sub-teams?"
+
+Deploys are team-attributed and `Team.name=` returns only Platform's own deploys, so total the subtree with the `Team.groupPath` roll-up (see SKILL.md → "Deployment metrics across a team tree"):
+
+1. Get Platform's hierarchy path: query `{"select": ["Team.name", "Team.path"], "filters": [], "metrics": []}` and read the `Team.path` where `Team.name == "Platform"` (e.g. `"<org-id>__organization.platform"`).
+2. Find the deploy metric's id in metadata — use the id, not the label (V1/V2 share labels).
+3. Query `mode: "groups"`, `select: ["Team.groupPath"]`, `filters: [{"field": "Team.groupPath", "operator": "DESCENDANT_OF", "value": "<that path>"}]`, the metric, and a time range.
+4. The response is a single row with the de-duplicated subtree total (no `Team.groupPath` column). Add `granularity` for a weekly series.
+
 ## "Compare MTTR across services — show p90"
 
 1. Search metadata for MTTR metric on `Service` asset
