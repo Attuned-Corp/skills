@@ -1,0 +1,43 @@
+skills/ask/SKILL.md
+  s_f9b900cc4a5ba2::t_005a058ae12799 162-163
+  s_f9b900cc4a5ba2::t_9616fd4b764c8a 186,189
+  s_f9b900cc4a5ba2::t_4582b568c69c8c 177-178
+  s_84f75b8f754f74::t_36acfa4475b45d 181-182,184,191,194-197,200-202,205
+  s_f9b900cc4a5ba2::t_2267c790896b6d 183,185,187-188,190,192-193,198-199,203-204,206-209
+skills/ask/references/api-reference.md
+  s_84f75b8f754f74::t_80bd7a894f0275 296
+  s_f9b900cc4a5ba2::t_ed2f93a6fd4417 295
+  s_84f75b8f754f74::t_a41d1c8d32f665 123,130-131,133-136,138-140
+  s_f9b900cc4a5ba2::t_4e47920821dea9 111
+  s_f9b900cc4a5ba2::t_7580c29e95bbd2 132,137,141
+skills/ask/references/domains.md
+  s_f9b900cc4a5ba2::t_f3581bde41a6c6 25
+  s_84f75b8f754f74::t_c2c89b6ab7fc23 26
+skills/ask/references/workflows.md
+  s_84f75b8f754f74::t_6297f6390f842a 40-41,43-44,48
+  s_f9b900cc4a5ba2::t_9309802e56b77d 42,45-47
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.3",
+  "base_commit_sha": "cbf98efea78b06a2dcb9ef282b50f5353d949e3f",
+  "prompts": {},
+  "sessions": {
+    "s_84f75b8f754f74": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "232248de-ea26-4bea-906d-dc8357690531",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Boyan Bonev <boyan@span.app>"
+    },
+    "s_f9b900cc4a5ba2": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "4fde9a78-96c5-4fb4-aa17-2e788f07049d",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Boyan Bonev <boyan@span.app>"
+    }
+  }
+}
