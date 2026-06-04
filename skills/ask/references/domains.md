@@ -22,6 +22,8 @@ Load this reference when a query touches one of these domains. Each section docu
 
 **Change failure rate** is a composite metric (incidents / deployments). It is not a single direct field — check metadata for how it is exposed. It may require querying both Deployment and Incident data.
 
+**Deploys across a team tree:** deploys are attributed to teams, not people, so `Team.name = "X"` returns that team's own deploys only (not its sub-teams) and the `Person` hierarchy pattern doesn't apply. To total a team and all of its sub-teams, use the groups-mode `Team.groupPath` `DESCENDANT_OF` roll-up in SKILL.md → "Deployment metrics across a team tree". It de-duplicates across teams in one query, so don't fetch per-team rows and sum them, and don't mix deploy metrics with person metrics in the same groups-mode query.
+
 **MTTR aggregation types:** MTTR supports `avg`, `p50`, `p75`, `p90`, and `max`. Choose based on intent:
 - `avg` — overall average recovery time
 - `p50` — typical recovery (median)

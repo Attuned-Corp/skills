@@ -159,7 +159,8 @@ Assets act as **aggregation points** (like SQL GROUP BY). Choose the appropriate
 | Organization/company-wide | `Team` | `Team.name = "Organization"` |
 | A specific team's metrics | `Team` | `Team.name = "<team-name>"` (use `=`, NOT `DESCENDANT_OF`) |
 | People in a team and sub-teams | `Person` | `Person.Teams.name` with `DESCENDANT_OF` operator |
-| Metrics across a team tree | `Person` | `Person.Teams.name` with `DESCENDANT_OF` + metrics on `Person` |
+| Metrics across a team tree (most metrics) | `Person` | `Person.Teams.name` with `DESCENDANT_OF` + metrics on `Person` — **does NOT work for deployment metrics, see below** |
+| Deployment metrics for a team + its sub-teams | `Team` (`mode: "groups"`) | `Team.groupPath` `DESCENDANT_OF` the team's path — see "Deployment metrics across a team tree" below |
 | A specific person | `Person` or `PullRequest.Author` | Email or name |
 | A specific repository | `Repository` or `PullRequest.Repository` | Repository name |
 | Individual PRs/commits | `PullRequest` or `Commit` | As needed |
@@ -173,11 +174,39 @@ Assets act as **aggregation points** (like SQL GROUP BY). Choose the appropriate
 
 #### Team Hierarchy: `=` vs `DESCENDANT_OF` vs `IN`
 
-- **`=`** — Use for metrics on a single team. `Team.name = "Backend"` returns that team's aggregated metrics.
-- **`DESCENDANT_OF`** — Use for **roster discovery only** (listing people). Expands a team to include all nested sub-teams. **Do NOT use `DESCENDANT_OF` for metric queries on `Team` — it causes double-counting** because parent team metrics already include sub-team data.
+- **`=`** — Use for metrics on a single team. `Team.name = "Backend"` returns that team's aggregated metrics. For most metrics this already rolls up the team's sub-teams (the `Team` facade aggregates hierarchically). **Exception: deployment metrics are leaf-only — see "Deployment metrics across a team tree" below.**
+- **`DESCENDANT_OF`** — Use for **roster discovery** (listing people), and for the **deployment roll-up** below. For most `Team` *metric* queries do NOT use it — `Team.name = "X"` already includes sub-team data, so it would double-count.
 - **`IN`** — Use to query a specific set of teams by name.
 
-**Correct pattern for metrics across a team tree:** Query `Person` (not `Team`) with `DESCENDANT_OF` on `Person.Teams.name`, then attach metrics to `Person`. Individual-level metrics don't double-count.
+**Most metrics across a team tree:** Query `Person` (not `Team`) with `DESCENDANT_OF` on `Person.Teams.name`, then attach metrics to `Person`. Individual-level metrics don't double-count.
+
+#### Deployment metrics across a team tree
+
+Deployment metrics are attributed to **teams, not people** (a deploy has no author), which makes them behave differently from the rest:
+
+- The `Person` + `DESCENDANT_OF` pattern above does not apply — there's no person to attach them to.
+- `Team.name = "X"` returns **only that team's own** deploys; unlike other metrics it does **not** roll up sub-teams.
+
+To total a team **and all of its sub-teams**, roll up over the team's subtree with `Team.groupPath` (metadata describes it: *"Filter with `DESCENDANT_OF` to scope a metric to a team and all of its subteams"*):
+
+1. Get the team's path — `{ "select": ["Team.name", "Team.path"] }` — and read its `Team.path` (an ltree, e.g. `"<org-id>__organization.platform"`).
+2. Roll up in groups mode:
+```json
+{
+  "mode": "groups",
+  "select": ["Team.groupPath"],
+  "metrics": [{ "metricId": "<deploy metric id from metadata>" }],
+  "filters": [{ "field": "Team.groupPath", "operator": "DESCENDANT_OF", "value": "<Team.path>" }],
+  "timeDimension": { "timeRange": { "startTime": "...", "endTime": "..." } }
+}
+```
+
+You get back one row — the subtree total, de-duplicated across teams (add `granularity` for a per-period series). That de-duplication is the reason to use the roll-up rather than fetching per-team rows and adding them up.
+
+Three things to get right:
+- **Pick the metric by id**, not label — V1 and V2 share labels.
+- **`Team.groupPath` is the subtree anchor only** — it's filter-only and dropped from the output, so it can't double as a breakdown (doing so returns a 400).
+- **One grain per query** — a groups-mode query can't mix deploy (team) metrics with person metrics; run them as separate queries.
 
 For additional patterns (top-level team discovery, manager lookups), see [references/api-reference.md](references/api-reference.md).
 
