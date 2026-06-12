@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.3.0] - 2026-06-12
+
+### Fixed
+
+- Corrected org-wide DORA deployment guidance: org-wide and subtree deployment totals must use the `Team.groupPath` `DESCENDANT_OF` roll-up, not `Team.name = "Organization"` (deploys are leaf-only on `Team.name`)
+
+### Added
+
+- Complete copy-pasteable groups-mode example for the deployment roll-up
+- Guidance on finding the org root team (the `Team.path` with no `.`)
+
 ## [1.2.0] - 2026-06-12
 
 ### Changed

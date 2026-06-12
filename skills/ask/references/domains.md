@@ -30,7 +30,7 @@ Load this reference when a query touches one of these domains. Each section docu
 - `p90` — worst-case excluding outliers
 - `max` — absolute worst case
 
-**Org-wide DORA:** Query `Team` filtered by `Team.name = "Organization"`. Do not manually aggregate across services or teams.
+**Org-wide DORA deployments:** Do NOT use `Team.name = "Organization"`. Deploys are leaf-only on `Team.name`, so it returns only that team's own deploys (usually ~0), not the company total. For an org-wide deployment total you MUST use the groups-mode `Team.groupPath` `DESCENDANT_OF` roll-up anchored at the **org root group path** — see SKILL.md → "Deployment metrics across a team tree". Do not manually aggregate across services or teams.
 
 ## Investment
 

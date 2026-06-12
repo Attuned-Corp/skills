@@ -156,7 +156,8 @@ Assets act as **aggregation points** (like SQL GROUP BY). Choose the appropriate
 
 | User asks about... | Query this asset | Filter by |
 |--------------------|------------------|-----------|
-| Organization/company-wide | `Team` | `Team.name = "Organization"` |
+| Organization/company-wide (most metrics) | `Team` | `Team.name = "<root team>"` — the org root; see note below |
+| Organization-wide **deployments** | `Team` (`mode: "groups"`) | `Team.groupPath` `DESCENDANT_OF` the **org root path** — `Team.name` is leaf-only for deploys and does NOT work here; see "Deployment metrics across a team tree" |
 | A specific team's metrics | `Team` | `Team.name = "<team-name>"` (use `=`, NOT `DESCENDANT_OF`) |
 | People in a team and sub-teams | `Person` | `Person.Teams.name` with `DESCENDANT_OF` operator |
 | Metrics across a team tree (most metrics) | `Person` | `Person.Teams.name` with `DESCENDANT_OF` + metrics on `Person` — **does NOT work for deployment metrics, see below** |
@@ -166,7 +167,7 @@ Assets act as **aggregation points** (like SQL GROUP BY). Choose the appropriate
 | Individual PRs/commits | `PullRequest` or `Commit` | As needed |
 | Breakdown by dimension (tenure, job level, etc.) | Use `mode: "groups"` | See api-reference.md |
 
-**IMPORTANT:** There is always a Team called "Organization" that represents the entire organization. For org-wide metrics, query `Team` filtered by `Team.name = "Organization"`. Do NOT manually aggregate across repositories or people.
+**IMPORTANT:** For org-wide metrics, query `Team` filtered by the **root team** — the one whose `Team.path` has no `.` separator (just `<hash>__<slug>`). Find it by listing teams: `{"select": ["Team.name", "Team.path"]}`. Do NOT manually aggregate across repositories or people. **Exception — deployments (and other team-attributed metrics): `Team.name` returns only that team's own deploys, so even the org-wide total must use the `Team.groupPath` `DESCENDANT_OF` roll-up anchored at the org root path — see "Deployment metrics across a team tree".**
 
 **Common mistake — querying the wrong facade for "metric by X":**
 
@@ -189,7 +190,7 @@ Deployment metrics are attributed to **teams, not people** (a deploy has no auth
 
 To total a team **and all of its sub-teams**, roll up over the team's subtree with `Team.groupPath` (metadata describes it: *"Filter with `DESCENDANT_OF` to scope a metric to a team and all of its subteams"*):
 
-1. Get the team's path — `{ "select": ["Team.name", "Team.path"] }` — and read its `Team.path` (an ltree, e.g. `"<org-id>__organization.platform"`).
+1. Get the target team's path — `{ "select": ["Team.name", "Team.path"] }` — and read its `Team.path` (an ltree, e.g. `"<org-id>__organization.platform"`). **For the org-wide total, use the root team's path** (the one with no `.`).
 2. Roll up in groups mode:
 ```json
 {
@@ -202,6 +203,28 @@ To total a team **and all of its sub-teams**, roll up over the team's subtree wi
 ```
 
 You get back one row — the subtree total, de-duplicated across teams (add `granularity` for a per-period series). That de-duplication is the reason to use the roll-up rather than fetching per-team rows and adding them up.
+
+**Complete working example** — org-wide deployments for a date range (the `value` is the **org root** `Team.path`; for a single team + its sub-teams, use that team's `Team.path` instead):
+```json
+{
+  "mode": "groups",
+  "select": ["Team.groupPath"],
+  "metrics": [
+    { "metricId": "c3377814-3805-4803-89ba-6f77bb3a8907", "responseKey": "deploys" }
+  ],
+  "filters": [
+    {
+      "field": "Team.groupPath",
+      "operator": "DESCENDANT_OF",
+      "value": "991ab8636a4c495e9febbd48509e480f__organization"
+    }
+  ],
+  "timeDimension": {
+    "timeRange": { "startTime": "2026-04-01", "endTime": "2026-04-11" }
+  }
+}
+```
+Returns `{ "data": [{ "deploys": <subtree total> }] }`. Notes: the `value` is org-specific — it comes from `Team.path` (step 1), never hard-code it. The `metricId` shown is the "Deployments" total-count metric; confirm the current id from metadata (pick by **id**, not label — labels are shared across metric versions).
 
 Three things to get right:
 - **Pick the metric by id**, not label — V1 and V2 share labels.
