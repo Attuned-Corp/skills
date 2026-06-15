@@ -1,0 +1,26 @@
+skills/ask/references/domains.md
+  s_b40d175afd25fd::t_adc57a73fb6451 33
+skills/ask/SKILL.md
+  s_b40d175afd25fd::t_241639502f2eed 170
+  s_b40d175afd25fd::t_1fb6cc3fbaa9f2 193
+  s_b40d175afd25fd::t_89e8693966143e 159
+CHANGELOG.md
+  s_b40d175afd25fd::t_fdc9fda007c26c 14
+  s_b40d175afd25fd::t_e64b9510b46204 9
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.7",
+  "base_commit_sha": "b572088e27b0efd9a5efb70ab6af82ed7965ddfb",
+  "prompts": {},
+  "sessions": {
+    "s_b40d175afd25fd": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a0c0c5a3-0cca-4c2d-8416-c4ed0483be45",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Boyan Bonev <boyan@span.app>"
+    }
+  }
+}
