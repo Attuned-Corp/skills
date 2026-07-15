@@ -142,8 +142,12 @@ Print one markdown report to the conversation. Write nothing to disk.
 1. **Executive summary** — one line: `N recs in → X implement-now / Y environment-only /
    Z already-resolved / W insufficient-evidence`. Then the ranked quick-win shortlist (top 3–5).
 2. **Priority table** — columns: Rank · Recommendation · Verdict · Impact · Effort · Risk ·
-   Reproduced? (yes/no/partial).
-3. **Per-recommendation detail** (priority order):
+   Reproduced? (yes/no/partial). **Cap at the top 10 recommendations by priority**; if more were
+   triaged, add a final line noting how many were omitted (e.g. "+7 lower-priority recs omitted").
+3. **Per-recommendation detail** — **only for `implement-now` recommendations, and skip the
+   low-impact ones** (a low-impact implement-now rec stays in the table above but gets no detail
+   block). **Cap at the top 5** such recommendations; if more qualify, note how many were omitted.
+   For each, in priority order:
    - **Verdict** and a one-line why.
    - **Reproduction** — the command(s) you ran and the observed result (verbatim key lines), or why
      it couldn't be reproduced.
@@ -153,8 +157,6 @@ Print one markdown report to the conversation. Write nothing to disk.
      apply it.**
    - **Verification** — the command that should pass / the output that should change once fixed.
    - **Effort · Risk · Priority rationale.**
-4. **Corrections** — anywhere your investigation contradicted a recommendation's premise (a stated
-   fact that turned out wrong, or a runtime claim you confirmed or refuted).
 
 ## Quality bar
 
