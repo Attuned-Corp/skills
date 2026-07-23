@@ -9,7 +9,7 @@ description: >-
   asked to improve a repo's AI-agent readiness, act on env-readiness
   recommendations, or make a repo easier for coding agents to work in.
 argument-hint: "[repo name/path or focus hint (optional)]"
-allowed-tools: Read, Bash(*), Grep, Glob, mcp__span__span_discover_schema, mcp__span__span_query_trace_details
+allowed-tools: Read, Bash(*), Grep, Glob, mcp__span__span_discover_schema, mcp__span__span_query_trace_details, mcp__span__span_archive_trace_recommendation, mcp__span__span_mark_trace_recommendation_done, mcp__span__span_restore_trace_recommendation
 ---
 
 # Environment-Readiness Recommendations — Investigate & Plan
@@ -106,8 +106,11 @@ runtime claim:
      resolves it (if the repo already declares the requirement — version files, engines fields,
      setup scripts, documented commands — the failure is local setup, not a repo gap). Keep it, but
      route it to environment setup, not a code change.
-   - `already-resolved` — the repo already handles it; the recommendation is stale. Show what covers
-     it.
+   - `already-resolved` — it was accurate when generated, but the repo has since changed and now
+     already handles it (a fix landed, a doc was written, a file was added). Show what covers it.
+   - `wrong-rec` — the premise was incorrect from the start, independent of any time passing
+     (hallucinated file/claim, references something that never matched this repo). Show what's
+     actually true instead.
    - `insufficient-evidence` — you could not reproduce it and found no structural anchor; don't
      invent a fix. Note what would settle it.
 
@@ -132,15 +135,16 @@ Rank the `implement-now` recommendations (and note the `environment-only` ones).
   low-blast-radius changes.
 
 Lead with **quick wins** (high impact, low effort, low risk). Call out high-impact/high-risk items
-separately so a human decides. Keep `already-resolved` / `insufficient-evidence` / `environment-only`
-in their own buckets, not buried in the ranking.
+separately so a human decides. Keep `already-resolved` / `wrong-rec` / `insufficient-evidence` /
+`environment-only` in their own buckets, not buried in the ranking.
 
 ## Step 5 — Output (print only)
 
 Print one markdown report to the conversation. Write nothing to disk.
 
 1. **Executive summary** — one line: `N recs in → X implement-now / Y environment-only /
-   Z already-resolved / W insufficient-evidence`. Then the ranked quick-win shortlist (top 3–5).
+   Z already-resolved / V wrong-rec / W insufficient-evidence`. Then the ranked quick-win shortlist
+   (top 3–5).
 2. **Priority table** — columns: Rank · Recommendation · Verdict · Impact · Effort · Risk ·
    Reproduced? (yes/no/partial). **Cap at the top 10 recommendations by priority**; if more were
    triaged, add a final line noting how many were omitted (e.g. "+7 lower-priority recs omitted").
@@ -157,6 +161,14 @@ Print one markdown report to the conversation. Write nothing to disk.
      apply it.**
    - **Verification** — the command that should pass / the output that should change once fixed.
    - **Effort · Risk · Priority rationale.**
+
+## Step 6 — Propose cleanup (ask first, don't auto-apply)
+
+After printing the Step 5 report, if any recommendations came back `already-resolved` or `wrong-rec`,
+tell the user that `span_archive_trace_recommendation` (and `span_mark_trace_recommendation_done` /
+`span_restore_trace_recommendation`) exist and offer to use them — don't call any of them without
+the user's go-ahead first, since they change the shared recommendation list other stewards/agents
+see. Follow each tool's own description for which one applies and what reason to pass.
 
 ## Quality bar
 
