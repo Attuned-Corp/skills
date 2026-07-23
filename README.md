@@ -7,6 +7,7 @@ Skills for querying Span. Compatible with Claude Code and Cursor.
 | Skill | Command | Description |
 |-------|---------|-------------|
 | [ask](skills/ask/) | `/span:ask` | Query engineering metrics, team velocity, PRs, deployments, investments, and more |
+| [env-readiness](skills/env-readiness/) | `/span:env-readiness` | Investigate a repo's environment-readiness recommendations and print a prioritized, repo-grounded plan of which to implement and how |
 
 ## Installation
 
