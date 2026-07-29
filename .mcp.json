@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "span": {
+      "type": "http",
+      "url": "https://api.span.app/mcp"
+    }
+  }
+}

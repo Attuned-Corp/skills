@@ -7,10 +7,9 @@
 #   "configured"
 #   "configured | api version mismatch (expected: X, detected: Y) — update the skill"
 #
-# SECURITY: This script's output is injected into the LLM prompt via
-# dynamic context injection (!`command`). It must NEVER output the token
-# or any sensitive data. We use jq 'has()' to check for the key's
-# existence without reading its value.
+# SECURITY: The agent uses this script's output as configuration context. It
+# must NEVER output the token or any sensitive data. We use jq 'has()' to check
+# for the key's existence without reading its value.
 
 SPAN_DIR="${SPAN_CONFIG_DIR:-$HOME/.spanrc}"
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"

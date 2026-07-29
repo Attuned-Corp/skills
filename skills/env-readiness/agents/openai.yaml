@@ -1,0 +1,4 @@
+interface:
+  display_name: "Span Environment Readiness"
+  short_description: "Plan repository readiness improvements"
+  default_prompt: "Use $span:env-readiness to investigate this repository and prioritize its environment-readiness recommendations."

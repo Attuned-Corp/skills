@@ -14,7 +14,11 @@ This skill queries Span across five domains:
 
 ## Prerequisites
 
-### Required Tools
+Codex plugin installations use the bundled Span MCP server and authenticate
+through OAuth in the browser. They do not require a Personal Access Token or
+the command-line tools below.
+
+### API Script Fallback Tools
 
 The following command-line tools must be installed:
 
@@ -23,9 +27,11 @@ The following command-line tools must be installed:
 | `curl` | API requests | Usually pre-installed. If not: `brew install curl` (macOS) or `apt install curl` (Linux) |
 | `jq` | JSON parsing | `brew install jq` (macOS) or `apt install jq` (Linux) |
 
-### Authentication
+### API Script Fallback Authentication
 
-You need a Span Personal Access Token. On first use, the skill will guide you through setup.
+Claude Code, Cursor, and standalone installations without the Span MCP server
+need a Span Personal Access Token. On first use, the skill guides that fallback
+setup.
 
 ## Skill Structure
 
@@ -47,7 +53,7 @@ ask/
 
 ## Configuration
 
-The skill stores configuration in `~/.spanrc/` by default:
+The API script fallback stores configuration in `~/.spanrc/` by default:
 
 ```
 ~/.spanrc/
@@ -74,7 +80,8 @@ export SPAN_CONFIG_DIR="/path/to/custom/folder"
 
 ## Usage
 
-Invoke with `/span:ask` in Claude Code, or just ask questions naturally:
+Invoke with `$span:ask` in Codex, `/span:ask` in Claude Code, or just ask questions
+naturally:
 
 - "How many PRs did we merge last week?"
 - "Show me the teams in Span"
@@ -83,7 +90,9 @@ Invoke with `/span:ask` in Claude Code, or just ask questions naturally:
 
 ## Automatic Activation
 
-You don't need to invoke `/span:ask` every time. Claude will automatically use this skill when you ask questions about engineering metrics, PRs, teams, or repositories.
+You don't need to invoke the skill every time. Codex, Claude Code, and Cursor
+can automatically use it when you ask questions about engineering metrics,
+PRs, teams, or repositories.
 
 ## Metadata Caching
 

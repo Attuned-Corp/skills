@@ -8,7 +8,6 @@ description: >-
   against the actual codebase and reproduces runtime friction locally. Use when
   asked to improve a repo's AI-agent readiness, act on env-readiness
   recommendations, or make a repo easier for coding agents to work in.
-argument-hint: "[repo name/path or focus hint (optional)]"
 allowed-tools: Read, Bash(*), Grep, Glob, mcp__span__span_discover_schema, mcp__span__span_query_trace_details, mcp__span__span_archive_trace_recommendation, mcp__span__span_mark_trace_recommendation_done, mcp__span__span_restore_trace_recommendation
 ---
 

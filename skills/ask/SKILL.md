@@ -9,28 +9,55 @@ description: >-
   and calendar (focus time, meeting load). Use when asked about
   engineering metrics, team velocity, pull requests, commits, deployments,
   epics, issues, sprints, investments, teams, or people.
-argument-hint: "<your question about engineering metrics>"
 allowed-tools: Read, Write, Bash(*), Grep, Glob
 ---
 
 # Span
 
-If the user provided arguments with this invocation, treat `$ARGUMENTS` as their query and proceed directly (still ask for clarification if the time range is missing).
+If the user explicitly invoked this skill with a question, treat that question as
+the query and proceed directly.
 
-## Script & Path Setup
+## Choose the Span Transport
 
-All bash commands in this skill should start by setting these two variables:
+Prefer the Span MCP tools when they are available. The Codex plugin bundles the
+Span MCP server and authenticates it through OAuth, so do not run the local
+configuration check or ask for a Personal Access Token in this mode.
+
+With MCP:
+
+1. Use `span_discover_schema` to identify the entity, dimensions, fields,
+   relations, and metrics needed for the question.
+2. Call the matching `span_query_*` tool with the smallest useful selection.
+3. Follow pagination until the requested result set is complete.
+4. Present the result in the form best suited to the question.
+
+If the Span MCP tools are unavailable, use the bundled API scripts and the
+Personal Access Token flow below. Never construct an inline API request.
+
+## API Script Fallback
+
+### Script & Path Setup
+
+Resolve the absolute directory containing this `SKILL.md` from the skill path
+provided by the host. Do not assume the current working directory is the skill
+directory. In Claude Code, `CLAUDE_SKILL_DIR` already contains that directory.
+
+Before running a bundled script, set these variables in the same shell command:
 
 ```bash
 SPAN_DIR="${SPAN_CONFIG_DIR:-$HOME/.spanrc}"
-SKILL_SCRIPTS="${CLAUDE_SKILL_DIR}/scripts"
+SKILL_DIR="${CLAUDE_SKILL_DIR:-<absolute directory containing this SKILL.md>}"
+SKILL_SCRIPTS="${SKILL_DIR}/scripts"
 ```
 
-Use `$SKILL_SCRIPTS/query.sh`, `$SKILL_SCRIPTS/fetch-metadata.sh`, etc. for all API operations. **Always prefer the scripts over inline curl commands.**
+Replace the placeholder with the resolved absolute path when
+`CLAUDE_SKILL_DIR` is unset. Use `$SKILL_SCRIPTS/query.sh`,
+`$SKILL_SCRIPTS/fetch-metadata.sh`, and the other bundled scripts for all API
+operations. **Always prefer the scripts over inline curl commands.**
 
-## Invocation Flow
+### Invocation Flow
 
-1. **Check configuration state** — the dynamic context injection below tells you if the skill is configured
+1. **Check configuration state** — run the bundled configuration check
 2. **If not configured** — run the First-Time Setup flow before anything else
 3. **Check metadata cache** — load `$SPAN_DIR/metadata-cache.json`, or fetch if missing
 4. **Ask clarifying questions** — especially for missing time ranges
@@ -38,11 +65,17 @@ Use `$SKILL_SCRIPTS/query.sh`, `$SKILL_SCRIPTS/fetch-metadata.sh`, etc. for all 
 6. **Execute query** — write query JSON to a temp file, run `$SKILL_SCRIPTS/query.sh`
 7. **Format and return results** — convert units, handle pagination
 
-## Configuration State
+### Configuration State
 
-!`${CLAUDE_SKILL_DIR}/scripts/check-config.sh`
+At the start of every invocation, run:
 
-## First-Time Setup
+```bash
+"$SKILL_SCRIPTS/check-config.sh"
+```
+
+Treat its stdout as the current configuration state.
+
+### First-Time Setup
 
 If the configuration state above shows "api version mismatch", warn the user that their installed skill version may be incompatible with the current Span API, and suggest they update the skill. You may still attempt queries, but results may be unreliable.
 
@@ -70,7 +103,7 @@ If the configuration state above shows "not configured", you MUST run the onboar
 
 5. **Confirm setup is complete** and proceed with the user's original request.
 
-### Configuration Directory
+#### Configuration Directory
 
 The skill stores configuration in `~/.spanrc/` by default. Override with `SPAN_CONFIG_DIR`:
 
@@ -80,7 +113,7 @@ The skill stores configuration in `~/.spanrc/` by default. Override with `SPAN_C
 └── metadata-cache.json       # Cached API metadata (auto-generated)
 ```
 
-## Token Security (CRITICAL)
+### Token Security (CRITICAL)
 
 **NEVER read, print, or expose the Personal Access Token.** The scripts in `$SKILL_SCRIPTS/` handle authentication internally. You must NOT:
 - Read `auth.json` (never use the Read tool on this file)
@@ -94,11 +127,15 @@ The skill stores configuration in `~/.spanrc/` by default. Override with `SPAN_C
 
 ### Time Intervals
 
-If the user's query does not specify a time range, **always ask before executing**:
+If a metric or event query does not specify a time range, **always ask before
+executing**:
 
 > "What time period would you like me to query? For example: last 30 days, last quarter, or a specific date range. (If you'd like, I can default to the last 30 days.)"
 
 **Do NOT assume a time range.** Even if the query sounds like it implies "recent" data, ask explicitly.
+
+Do not ask for a time range when the request is not temporal, such as listing
+teams, repositories, or people.
 
 Examples requiring clarification:
 - "How many PRs did we merge?" → Ask for time range

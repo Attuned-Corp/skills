@@ -1,0 +1,20 @@
+{
+  "name": "span-skills",
+  "interface": {
+    "displayName": "Span Skills"
+  },
+  "plugins": [
+    {
+      "name": "span",
+      "source": {
+        "source": "local",
+        "path": "./"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

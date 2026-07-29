@@ -36,9 +36,10 @@ persists output — the plan is printed to the conversation for a human to revie
 
 ## Usage
 
-Invoke with `/span:env-readiness` in Claude Code, or ask naturally — e.g. "improve this repo's
-AI-agent readiness" or "act on our env-readiness recommendations". Optionally pass a repo name/path
-or a focus hint as an argument.
+Invoke with `$span:env-readiness` in Codex or `/span:env-readiness` in Claude Code,
+or ask naturally - e.g. "improve this repo's AI-agent readiness" or "act on our
+env-readiness recommendations". Optionally pass a repo name/path or a focus
+hint as an argument.
 
 ## Skill Structure
 

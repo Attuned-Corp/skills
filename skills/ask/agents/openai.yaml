@@ -1,0 +1,4 @@
+interface:
+  display_name: "Ask Span"
+  short_description: "Query engineering insights from Span"
+  default_prompt: "Use $span:ask to answer my question with data from Span."
