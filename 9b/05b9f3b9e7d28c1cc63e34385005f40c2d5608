@@ -1,0 +1,22 @@
+skills/ask/references/domains.md
+  s_a1f4d86e8e1b51::t_e6b46774f3d9ee 104,107-108,110-111
+  s_a1f4d86e8e1b51::t_f360b6ca6a70a4 113
+  s_a1f4d86e8e1b51::t_3beec29c80fc5c 78
+  s_a1f4d86e8e1b51::t_41887e5198f2b9 70
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.20",
+  "base_commit_sha": "9b05b9f3b9e7d28c1cc63e34385005f40c2d5608",
+  "prompts": {},
+  "sessions": {
+    "s_a1f4d86e8e1b51": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "65647ca4-2e25-4ad7-b0b3-43b8343ea714",
+        "model": "claude-opus-5"
+      },
+      "human_author": "Boyan Bonev <boyan@span.app>"
+    }
+  }
+}
