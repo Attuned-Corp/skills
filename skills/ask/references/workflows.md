@@ -53,6 +53,22 @@ Deploys are team-attributed and `Team.name=` returns only Platform's own deploys
 3. Add time dimension with appropriate range
 4. Sort by metric descending to show worst-performing services first
 
+## "Which skills does the team actually use?"
+
+No metric exists for this — it's a corpus query (see domains.md → AI Traces).
+
+1. Query `Trace` for the window selecting `Trace.id` and `Trace.Author.email`; count the distinct authors. This is the org-wide frame.
+2. Query `TraceEvent` with `toolChannel = 'skill'`, **no** `traceId` and no `toolName`, `"metrics": []`, and a time range. Page with `after` until covered, writing output to a file.
+3. Group the rows by `toolName` with `jq` — report invocations and distinct `traceId`s per skill.
+4. **Scope check:** count distinct `TraceEvent.authorEmail` and compare with step 1. One author against a frame of twenty means you surveyed your own usage — lead with that.
+
+## "Walk me through what happened in this agent session"
+
+1. `Trace` filtered by `Trace.id` for the frame (`turnsCount`, `toolUsesCount`, `complexity`, `taskCategories`, author).
+2. `TraceTurn` filtered by `traceId` for the turn digests. Pick the interesting turns: high `toolCalls` with low `fileWrites` is thrash, `subagents > 0` is delegation.
+3. Read those turns with `TraceEvent` filtered by `traceId` **and** `turnIndex = N`. Quote with trace id + turn index.
+4. Empty turns or events mean you may not read this author's session content — report that rather than describing an empty session.
+
 ## "Reload Span metadata"
 
 1. Run `$SKILL_SCRIPTS/fetch-metadata.sh`

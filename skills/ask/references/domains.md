@@ -59,6 +59,63 @@ Load this reference when a query touches one of these domains. Each section docu
 
 **Grouping by tool/model:** AiToolUsage has dimensions for tool name and AI model, allowing breakdowns like "AI usage by tool" or "spend by model."
 
+**Not the same as AI Traces.** This domain measures AI's footprint on the *codebase* (what share of code is AI-authored, what the tools cost, who has a seat). AI Traces measures what happened *inside agent sessions*. "How much AI do we use?" is this domain; "which skills do people invoke, and what do their agents do?" is AI Traces — see below.
+
+## AI Traces
+
+**Assets:** Trace (a session), TraceTurn (its turns), TraceEvent (its events), TraceRecommendation
+
+Fields, filters, operators and page caps are described per field in the facade metadata — read them there. Below is only what the metadata can't tell you.
+
+**A missing facade is not a zero.** The whole domain is gated together: when the org doesn't have AI traces enabled or the token lacks trace access, the facades, the trace metrics *and* the `aiTrace*` dimensions are all absent from metadata — so the aggregate plane is no fallback for the corpus plane, and a metric search that comes up empty is the same signal. If they're still missing after a refresh, say "AI traces aren't enabled for this org (or this token lacks trace access)" — never "no agent activity".
+
+**TraceRecommendation belongs to another skill.** "What should we fix so agents work better in this repo?" is the `env-readiness` skill's job — it reads the same recommendations *and* can act on them (archive, mark done), which this skill cannot. Route that question there instead of answering it here.
+
+**Match the question to the shape:**
+
+| Question | Query |
+|----------|-------|
+| "How much are we running agents?" — sessions, active users, cost, autonomy ratio | Trace metrics on `Person` or `Team` (search the cache — that's where they're exposed), or `Trace` in groups mode by `aiTraceTool` / `aiTraceModel` / `aiTraceTaskCategory` (a dimension — grouping by the Author or Team relation is rejected) |
+| "What happened inside sessions?" — skills, prompts, failures, files | `TraceEvent` with **no** `traceId`: a corpus search across every session you can read |
+| "Which sessions did X happen in?" | `Trace` with an `eventCount` filter |
+| "Walk me through this session" | `Trace.id` → `TraceTurn(traceId)` → `TraceEvent(traceId, turnIndex)` |
+
+**Three levels, and a rule for stopping.** Trace is the *frame* — what kind of work, how hard. TraceTurn is the *behavior* — how the person drove the agent, where most signal lives and the cheapest place to find it. TraceEvent is the *evidence* — the exact prompt or tool output, read to ground a citation. Start at the frame, analyze at the turn, cite at the event, and **stop at the shallowest level that supports the claim**. Event bodies dominate everything else: on a real corpus they run roughly 20× the turn digests and 450× the frame, and here the binding limit is the conversation itself, so descend deliberately and on a handful of exemplars.
+
+**TraceEvent and TraceTurn carry no metrics** and no server-side grouping — one row per event or turn — so "which skills are most used" means paging rows and aggregating them yourself; send `"metrics": []`. This is the one place in this skill where client-side aggregation is correct. **But filter server-side first:** the frame's magnitude counts are filterable and sortable, so "sessions with more than two skill uses" is `skillUsesCount > 2` rather than a page-and-count; a named skill or repo is an `eventCount` filter; and the per-turn magnitude filters (`toolCalls`, `fileWrites`, `subagents`, `skillUses`, `durationMs`, `boundary`) locate the interesting turns without reading a single body. Aggregate client-side only for what no filter or metric expresses.
+
+**One root facade per query.** `Trace` and `TraceEvent` cannot be joined — selecting across both is a 400. `authorEmail` is the bridge back to a person on the event and turn facades; `traceId` is the bridge back to a session.
+
+**Turn shapes** — how rollups become readings. Each is a hypothesis to confirm at the event level, and each reads differently depending on task category and complexity:
+
+| Shape | Turn signals | Reading |
+|-------|--------------|---------|
+| One-shot | one `user_act` turn, `fileWrites > 0`, modest `toolCalls`, no correction after | effective, autonomous |
+| Thrash | high `toolCalls` with low or zero `fileWrites`; or repeated writes to one file | spinning — wrong approach or missing context |
+| Correction loop | many short consecutive `user_act` turns, small rollups | over-steering, or an unclear opening prompt |
+| Hand-holding | many user turns, no subagents, on complex work | low autonomy — delegate or front-load context |
+| Delegation | `subagents > 0` on a complex session | parallel work; a strength |
+| Explore-heavy | `fileReads` far exceeding `fileWrites`, sustained | healthy for exploration, a stall on a trivial fix |
+
+**Corpus recipes** (all `TraceEvent`, no `traceId`):
+
+| To find | Filter | Note |
+|---------|--------|------|
+| Which skills exist / are most used | `toolChannel = 'skill'`, no `toolName` | one row per invocation; group by `toolName` yourself — names have no wildcard match |
+| One named skill | `toolChannel = 'skill'` + `toolName` | |
+| MCP tool usage | `toolChannel = 'mcp'` | |
+| What people typed as prose | `eventTypes = 'user_prompt'` | **plain prompts only.** A typed `/slash` command is recorded as the skill invocation it names, not as a prompt, so this undercounts what people actually asked for |
+| Everything a person initiated | `initiatedBy = 'user'` | prompts *and* typed commands; `'agent'` gives the model's own dispatches, and the two partition the same rows |
+| Runs that failed | `success = false` | `null` means no outcome reported, not a pass |
+| Files edited, not merely touched | `eventTypes = 'file_change'` + `fileOperation = 'modify'` | one row per file, not per tool call — a single edit act can touch several |
+| An error phrase in tool output | top-level `search` | BM25 covers what an act was asked to do *and* what it produced, so "permission denied" finds the run that emitted it |
+
+**An empty result is ambiguous — the biggest trap in this domain.** Session *metadata* (counts, duration, tool, author, cost) is visible for every session you can list, but session *content* — prompts, tool calls, turn digests, the whole TraceEvent/TraceTurn surface — is limited to authors whose content you may read, often just your own. It fails soft: 200 with zero rows, not an error. So before reporting any corpus finding, compare the distinct authors in your event rows against the distinct `Trace.Author.email` for the same window. One author out of twenty means you surveyed your own usage — say so in the headline. This also makes some questions only half-answerable: `Trace.skillUsesCount` gives you skill invocations per session — and so how many sessions used *any* skill — for every session you can list, but *naming* the skill is content-scoped. Check the window too — if the returned `firstEventAt` values stop well inside the range you asked for, the corpus doesn't span it; widen and report the real range rather than reading a young corpus as a decline.
+
+**Rank eval and classification fields yourself.** `evalOverallScore`, `cost`, `complexity`, `taskCategories` and `title` are select-only (the metadata says so per field), so "the worst-scoring sessions" can't be a server-side sort — select over a bounded window and order client-side.
+
+**Calibrate, and don't build a scoreboard.** Judge every signal relative to task category × complexity, never raw magnitude — 25 tool calls in one turn is healthy for a complex refactor and a smell on a trivial fix. Never rank people by eval score or print individual scores; describe patterns, not performance, and treat unevaluated as unevaluated rather than bad. Don't drill only the failed or low-scoring sessions — that is the most common way to reach a biased finding; span the range and include at least one clean session for contrast. Cite by trace id + turn index, treat a single occurrence as a one-off, and remember you only see the trace: a missing verification step may mean the environment blocked the agent, not that the person skipped it.
+
 ## Calendar
 
 **No dedicated asset.** Calendar metrics (focus time, meeting hours, fragmented time, maker time) live on **Person** and **Team**.

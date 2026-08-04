@@ -90,6 +90,7 @@ curl -s -X POST "https://api.span.app/next/assets/query?limit=25" \
 | `timeDimension` | No | Time range and optional granularity |
 | `order` | No | Sort order (`field` + `direction`: `"asc"` or `"desc"`) |
 | `mode` | No | `"groups"` for dimension-based aggregation (see Groups Mode below) |
+| `search` | No | Free-text relevance search (BM25). **Only** the trace facades (`Trace`, `TraceEvent`, `TraceTurn`) accept it; rejected everywhere else, and rejected in `groups` mode. See [domains.md](domains.md) → AI Traces. |
 
 ### Metric Object
 
@@ -111,6 +112,15 @@ Each metric in the `metrics` array:
 | `DESCENDANT_OF` | Hierarchical tree traversal — expands a team and all its sub-teams (roster discovery, and the **deployment roll-up** on `Team.groupPath`; see notes below) |
 
 **CONTAINS / NOT_CONTAINS constraints:** These operators only work on catalog fields (e.g., `Repository.repositoryName`, `Team.path`, `PullRequest.title`). They are NOT supported on dimension or relation fields (e.g., `Person.Teams.name`). Use `=` or `IN` for those instead.
+
+**`eventCount` filters (Trace only)** — a correlated sub-count that keeps sessions containing matching events. It replaces `field`/`operator`/`value` with an `eventCount` object:
+```json
+{"eventCount": {
+  "where": [{"field": "toolChannel", "operator": "=", "value": "skill"}],
+  "operator": ">=", "value": 1
+}}
+```
+`where` fields are bare (no `Trace.` prefix) and limited to `toolChannel`, `toolName`, `repo`, `branch`, `model` with `=`/`IN`; the outer operator is `>` or `>=` only. Rejected on any other facade and in `groups` mode. See [domains.md](domains.md) → AI Traces.
 
 **Compound filters** — use `"and"` to combine multiple conditions:
 ```json
@@ -180,6 +190,10 @@ This returns only root teams (teams whose path has no `.` separator, meaning the
 **Pagination:** If `meta.page.hasNextPage` is `true`, pass `meta.page.endCursor` as the `after` query parameter to get the next page.
 
 **Units in annotations:** Common values are `seconds`, `hours`, `days`, `usd`, `count`, `percentage_as_ratio`, `score`, `boolean`, `estimate`. Use these to format results correctly.
+
+**Truncation flags in annotations:** trace queries may return `eventCountTruncated`, `searchTruncated`, or `turnEventsTruncated`. These mean your match set was capped, not that it was small — always report them.
+
+**Trace facades page differently:** `Trace`, `TraceEvent` and `TraceTurn` are forward-only (`after` works, `before` is rejected), and `TraceEvent`/`TraceTurn` reject `order` entirely — their ordering is intrinsic. See [domains.md](domains.md) → AI Traces.
 
 ## Time Dimensions
 

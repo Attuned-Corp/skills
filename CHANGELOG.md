@@ -2,6 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.0] - 2026-08-04
+
+### Added
+
+- **AI Traces domain** in the `ask` skill — query agent sessions and what happened inside them (skill and MCP usage, prompts, tool calls, file changes, per-turn behavior) across the `Trace`, `TraceTurn` and `TraceEvent` facades, with recommendation questions routed to the `env-readiness` skill
+- Trace routing and corpus recipes in `references/domains.md`, including the scope check that keeps a content-limited result from being reported as an org-wide one
+- The frame → turn → event ladder with a stop rule, a turn-shape vocabulary (thrash, correction loop, hand-holding, delegation, …), and the calibration and inference discipline that keeps trace findings from becoming a scoreboard
+- Guidance to report a gated org as "not enabled" rather than as zero activity
+- Two trace walkthroughs in `references/workflows.md`
+- `search` and the `eventCount` filter documented in `references/api-reference.md`, along with trace response annotations and pagination differences
+
+### Changed
+
+- Client meta version bumped to `skill/2026-08-04`
+- Trace corpus queries are exempt from the "never aggregate yourself" rule — those facades expose no metrics and no server-side grouping
+
 ## [1.3.0] - 2026-06-12
 
 ### Fixed
