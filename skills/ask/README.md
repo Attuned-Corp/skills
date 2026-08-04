@@ -4,13 +4,16 @@ Query Span for organizational observability.
 
 ## What it Does
 
-This skill queries Span across five domains:
+This skill queries Span across six domains:
 
 - **Productivity** — cycle time, throughput, review metrics, onboarding
 - **DORA** — deployment frequency, lead time, MTTR, change failure rate
 - **Investment** — effort allocation, workstreams, cost capitalization
 - **AI Transformation** — AI code ratio, adoption rates, spend
 - **Calendar** — focus time, meeting load, maker time
+- **AI Traces** — agent sessions: skill and MCP usage, prompts, tool calls, per-turn behavior
+
+AI Traces requires trace access on your organization and token. Session content (prompts, tool calls, turn digests) is scoped further — often to your own sessions — so the skill labels each figure with the scope it actually measured.
 
 ## Prerequisites
 
@@ -80,10 +83,11 @@ Invoke with `/span:ask` in Claude Code, or just ask questions naturally:
 - "Show me the teams in Span"
 - "What's the cycle time for the core team?"
 - "Who merged the most PRs last month?"
+- "Which skills do we use most in our agent sessions?"
 
 ## Automatic Activation
 
-You don't need to invoke `/span:ask` every time. Claude will automatically use this skill when you ask questions about engineering metrics, PRs, teams, or repositories.
+You don't need to invoke `/span:ask` every time. Claude will automatically use this skill when you ask questions about engineering metrics, PRs, teams, repositories, or AI agent sessions.
 
 ## Metadata Caching
 

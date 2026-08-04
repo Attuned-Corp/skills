@@ -2,13 +2,16 @@
 name: ask
 description: >-
   Queries Span for organizational
-  observability across five domains: productivity (cycle time, throughput,
+  observability across six domains: productivity (cycle time, throughput,
   review metrics), DORA (deployment frequency, lead time, MTTR, change
   failure rate), investment (effort allocation, workstreams, cost
   capitalization), AI transformation (AI code ratio, adoption, spend),
-  and calendar (focus time, meeting load). Use when asked about
-  engineering metrics, team velocity, pull requests, commits, deployments,
-  epics, issues, sprints, investments, teams, or people.
+  calendar (focus time, meeting load), and AI traces (agent sessions —
+  what happened inside them). Use when asked about engineering metrics,
+  team velocity, pull requests, commits, deployments, epics, issues,
+  sprints, investments, teams, or people; or about agent sessions,
+  coding-agent or Claude Code sessions, agent traces, skill usage,
+  prompts, tool calls, or AI-agent behavior.
 argument-hint: "<your question about engineering metrics>"
 allowed-tools: Read, Write, Bash(*), Grep, Glob
 ---
@@ -115,6 +118,8 @@ Also ask for clarification when:
 - **Metric is ambiguous**: "Did you mean X or Y metric?"
 - **Scope is unclear**: "Should this be organization-wide or for a specific team?"
 
+For **trace** questions, don't ask whose sessions you may read — permissions decide that, and it isn't knowable in advance. Query, then report the scope you actually measured (see [references/domains.md](references/domains.md) → AI Traces). Still ask for the time range.
+
 ## Metadata Caching
 
 API metadata (assets, fields, metrics) is cached at `$SPAN_DIR/metadata-cache.json`. If the cache exists, use it. If not, run `$SKILL_SCRIPTS/fetch-metadata.sh`. Only refresh when the user explicitly asks to reload.
@@ -129,6 +134,8 @@ Before building any query, confirm:
 1. The requested metric exists in cached metadata
 2. The requested asset type exists (Team, Person, PullRequest, etc.)
 3. The metric is available on that asset type
+
+**Trace facades are gated.** `Trace`, `TraceEvent`, `TraceTurn` and `TraceRecommendation` are absent from metadata unless the org has AI traces enabled and the token carries trace access. If they're missing after a refresh, report that — not "no agent activity".
 
 **If verification fails, prioritize partial fulfillment:**
 - Execute what IS possible, return available data
@@ -165,6 +172,9 @@ Assets act as **aggregation points** (like SQL GROUP BY). Choose the appropriate
 | A specific person | `Person` or `PullRequest.Author` | Email or name |
 | A specific repository | `Repository` or `PullRequest.Repository` | Repository name |
 | Individual PRs/commits | `PullRequest` or `Commit` | As needed |
+| Volume/cost/adoption of agent sessions | `Team` or `Person` + trace metrics | Normal metric loop |
+| Agent sessions broken down by tool/model/task category | `Trace` (`mode: "groups"`) | Group by a **dimension** (`aiTraceTool`, …), never by the Author/Team relation |
+| What happened *inside* agent sessions (skills, prompts, tool calls, files) | `Trace` → `TraceTurn` → `TraceEvent` | Corpus queries, `metrics: []` — see domains.md |
 | Breakdown by dimension (tenure, job level, etc.) | Use `mode: "groups"` | See api-reference.md |
 
 **IMPORTANT:** For org-wide metrics, query `Team` filtered by the **root team** — the one whose `Team.path` has no `.` separator (just `<hash>__<slug>`). Find it by listing teams: `{"select": ["Team.name", "Team.path"]}`. Do NOT manually aggregate across repositories or people. **Exception — deployments (and other team-attributed metrics): `Team.name` returns only that team's own deploys, so even the org-wide total must use the `Team.groupPath` `DESCENDANT_OF` roll-up anchored at the org root path — see "Deployment metrics across a team tree".**
@@ -249,6 +259,8 @@ When using `granularity` in the time dimension, the API returns **already-aggreg
 4. Return the pre-aggregated results directly
 
 **When comparing time periods**, always use the same asset, metric, and query path for both periods. Inconsistent query paths (e.g., different facades or aggregation levels) produce incomparable numbers.
+
+**Exception — trace corpus queries.** `TraceEvent` and `TraceTurn` have no metrics and no server-side grouping, so "which skills are most used" has no pre-built metric to find. There, send `"metrics": []`, page the rows, and aggregate them yourself with `jq`. This is the only domain where client-side aggregation is correct.
 
 ### Step 4: Plan Multi-Step Queries
 
@@ -340,6 +352,13 @@ Convert accordingly:
 - **"How much time are engineers in meetings?"** → Query `Team` or `Person` with meeting hours, focus time metrics
 - **"What's our maker time like?"** → Query `Team` with focus time and fragmented time metrics
 
+### AI Traces
+
+- **"Which skills do we actually use?"** → `TraceEvent` corpus query (`toolChannel = 'skill'`, no `traceId`), then group by `toolName` — and state whose sessions you could actually read
+- **"Which agent tool calls are failing?"** → `TraceEvent` corpus query with `success = false`
+- **"Walk me through this session"** → `Trace.id` → `TraceTurn(traceId)` → `TraceEvent(traceId, turnIndex = N)`
+- **"How much are we running agents?"** → trace metrics on `Team`/`Person`, or `Trace` in `mode: "groups"` by `aiTraceTool`
+
 ### Administration
 - **"What version is installed?" / "Check for updates"** → Run `$SKILL_SCRIPTS/check-version.sh`
 - **"Reload Span metadata"** → Run `$SKILL_SCRIPTS/fetch-metadata.sh`
@@ -347,7 +366,7 @@ Convert accordingly:
 
 For more detailed step-by-step walkthroughs, see [references/workflows.md](references/workflows.md).
 
-For domain-specific query guidance (investment views, DORA facades, PR time dimensions, AI tool patterns, calendar caveats), see [references/domains.md](references/domains.md).
+For domain-specific query guidance (investment views, DORA facades, PR time dimensions, AI tool patterns, agent-session traces, calendar caveats), see [references/domains.md](references/domains.md).
 
 ## Reference Material
 

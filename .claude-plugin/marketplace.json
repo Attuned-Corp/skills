@@ -1,8 +1,8 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "span-skills",
-  "version": "1.3.0",
-  "description": "Claude Code plugins for querying engineering, project management, and investment data from the Span Knowledge Graph API",
+  "version": "1.4.0",
+  "description": "Claude Code plugins for querying engineering, project management, investment, and AI agent trace data from the Span Knowledge Graph API",
   "owner": {
     "name": "Span",
     "url": "https://span.app"
@@ -13,8 +13,8 @@
   "plugins": [
     {
       "name": "span",
-      "description": "Query engineering, project management, and investment data from the Span Knowledge Graph API",
-      "version": "1.3.0",
+      "description": "Query engineering, project management, investment, and AI agent trace data from the Span Knowledge Graph API",
+      "version": "1.4.0",
       "author": {
         "name": "Span"
       },
