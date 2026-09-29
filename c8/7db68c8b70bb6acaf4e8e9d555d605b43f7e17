@@ -1,0 +1,30 @@
+skills/ask/references/domains.md
+  s_aa982d70025063::t_7e89a158e32039 66
+  s_aa982d70025063::t_613e75bc5fb9d5 80,84,112
+skills/ask/SKILL.md
+  s_aa982d70025063::t_7e89a158e32039 138
+.claude-plugin/marketplace.json
+  s_aa982d70025063::t_7e89a158e32039 4,17
+.claude-plugin/plugin.json
+  s_aa982d70025063::t_7e89a158e32039 4
+CHANGELOG.md
+  s_aa982d70025063::t_1a46c9f4f59ec8 5-21
+skills/ask/VERSION
+  s_aa982d70025063::t_1f8507712b505e 1
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "c87db68c8b70bb6acaf4e8e9d555d605b43f7e17",
+  "prompts": {},
+  "sessions": {
+    "s_aa982d70025063": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "70bf0e72-e38b-4a32-a608-07aea6a34995",
+        "model": "unknown"
+      },
+      "human_author": "Boyan Bonev <boyan@span.app>"
+    }
+  }
+}
