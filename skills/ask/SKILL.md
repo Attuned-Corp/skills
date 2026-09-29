@@ -135,7 +135,7 @@ Before building any query, confirm:
 2. The requested asset type exists (Team, Person, PullRequest, etc.)
 3. The metric is available on that asset type
 
-**Trace facades are gated.** `Trace`, `TraceEvent`, `TraceTurn` and `TraceRecommendation` are absent from metadata unless the org has AI traces enabled and the token carries trace access. If they're missing after a refresh, report that — not "no agent activity".
+**Trace facades are gated.** `Trace`, `TraceEvent` and `TraceTurn` are absent from metadata unless the org has AI traces enabled and the token carries trace access. If they're missing after a refresh, report that — not "no agent activity".
 
 **If verification fails, prioritize partial fulfillment:**
 - Execute what IS possible, return available data

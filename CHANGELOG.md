@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.0] - 2026-09-29
+
+### Removed
+
+- The `env-readiness` skill. The trace recommendations it read are retired; environment readiness now lives on the Harness health page in Span, and the MCP server no longer offers the recommendation tools the skill called
+- The trace recommendation entity from the `ask` skill's AI Traces domain, and the routing note that sent recommendation questions to `env-readiness`
+
+### Added
+
+- `ask` AI Traces: routing for sessions by issue or repository through the `Trace.Issues` and `Trace.Repositories` relations
+- `ask` AI Traces: turn timings, where `durationMs` splits into `activeMs` plus the stalls in `gaps`
+- `ask` AI Traces: screening stubs, which are listed sessions with a placeholder title and no content for non-authors, including every session before 2026-09-01
+
+### Changed
+
+- Client meta version bumped to `skill/2026-09-29`
+
 ## [1.4.0] - 2026-08-04
 
 ### Added
