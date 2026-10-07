@@ -66,7 +66,7 @@ No metric exists for this — it's a corpus query (see domains.md → AI Traces)
 
 1. `Trace` filtered by `Trace.id` for the frame (`turnsCount`, `toolUsesCount`, `complexity`, `taskCategories`, author).
 2. `TraceTurn` filtered by `traceId` for the turn digests. Pick the interesting turns: high `toolCalls` with low `fileWrites` is thrash, `subagents > 0` is delegation.
-3. Read those turns with `TraceEvent` filtered by `traceId` **and** `turnIndex = N`. Quote with trace id + turn index.
+3. Read those turns with `TraceEvent` filtered by `traceId` **and** `turnIndex = N`. Quote with trace id + turn index. On a session spanning more than one day, if the event count differs from the turn's `eventIndexRange` (end − start), quote the turn row instead.
 4. Empty turns or events mean you may not read this author's session content — report that rather than describing an empty session.
 
 ## "Reload Span metadata"
