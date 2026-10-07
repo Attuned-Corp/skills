@@ -63,9 +63,15 @@ Load this reference when a query touches one of these domains. Each section docu
 
 ## AI Traces
 
-**Assets:** Trace (a session), TraceTurn (its turns), TraceEvent (its events)
+**Assets:** Trace (a session), TraceTurn (its turns), TraceEvent (its events), TraceEventCount (events counted by their properties)
 
-Fields, filters, operators and page caps are described per field in the facade metadata — read them there. Below is only what the metadata can't tell you.
+Fields, filters, operators and page caps are described per field in the facade metadata — read them there:
+
+```bash
+jq '.data[] | select(.name == "TraceEvent") | .fields[] | {name, description}' "$SPAN_DIR/metadata-cache.json"
+```
+
+Below is only what the metadata can't tell you.
 
 **A missing facade is not a zero.** The whole domain is gated together: when the org doesn't have AI traces enabled or the token lacks trace access, the facades, the trace metrics *and* the `aiTrace*` dimensions are all absent from metadata — so the aggregate plane is no fallback for the corpus plane, and a metric search that comes up empty is the same signal. If they're still missing after a refresh, say "AI traces aren't enabled for this org (or this token lacks trace access)" — never "no agent activity".
 
@@ -75,9 +81,10 @@ Fields, filters, operators and page caps are described per field in the facade m
 |----------|-------|
 | "How much are we running agents?" — sessions, active users, cost, autonomy ratio | Trace metrics on `Person` or `Team` (search the cache — that's where they're exposed), or `Trace` in groups mode by `aiTraceTool` / `aiTraceModel` / `aiTraceTaskCategory` (a dimension — grouping by the Author or Team relation is rejected) |
 | "What happened inside sessions?" — skills, prompts, failures, files | `TraceEvent` with **no** `traceId`: a corpus search across every session you can read |
-| "Which sessions did X happen in?" | `Trace` with an `eventCount` filter |
-| "Walk me through this session" | `Trace.id` → `TraceTurn(traceId)` → `TraceEvent(traceId, turnIndex)` |
-| "Which sessions worked on issue X / in repo Y?" | `Trace` via the `Issues` or `Repositories` relation (catalog entities; `Issue.Traces` goes the other way). `Trace.Issues` carries only `id`, so resolve the issue first. The `repos` field is the raw remote name as the session saw it, not the catalog repository |
+| "Which sessions did X happen in?" | `Trace` with an `eventCount` filter (acts only; for file changes or sub-agents use `fileChangesCount` or `subagentsCount >= 1`) |
+| "How many events of each kind, by tool or outcome?" | `TraceEventCount` — select at least one group-by key plus the count; across sessions, or within one `traceId` (a single id) |
+| "Walk me through this session" | `Trace.id` → `TraceTurn(traceId)` → `TraceEvent(traceId, turnIndex)` — see workflows.md for sessions spanning more than one day |
+| "Which sessions worked on issue X / in repo Y?" | `Trace` via the `Issues` or `Repositories` relation (catalog entities; `Issue.Traces` goes the other way). `Trace.Issues` carries only `id`, so resolve the issue first. Filtering on `Trace.Issues.id` narrows `Trace.Issues` to the match; read by `Trace.id` for all of a session's issues. The `repos` field is the raw remote name as the session saw it, not the catalog repository |
 
 **Three levels, and a rule for stopping.** Trace is the *frame* — what kind of work, how hard. TraceTurn is the *behavior* — how the person drove the agent, where most signal lives and the cheapest place to find it. TraceEvent is the *evidence* — the exact prompt or tool output, read to ground a citation. Start at the frame, analyze at the turn, cite at the event, and **stop at the shallowest level that supports the claim**. Event bodies dominate everything else: on a real corpus they run roughly 20× the turn digests and 450× the frame, and here the binding limit is the conversation itself, so descend deliberately and on a handful of exemplars.
 
@@ -109,7 +116,7 @@ Fields, filters, operators and page caps are described per field in the facade m
 | Files edited, not merely touched | `eventTypes = 'file_change'` + `fileOperation = 'modify'` | one row per file, not per tool call — a single edit act can touch several |
 | An error phrase in tool output | top-level `search` | BM25 covers what an act was asked to do *and* what it produced, so "permission denied" finds the run that emitted it |
 
-**An empty result is ambiguous — the biggest trap in this domain.** Session *metadata* (counts, duration, tool, author, cost) is visible for every session you can list, but session *content* — prompts, tool calls, turn digests, the whole TraceEvent/TraceTurn surface — is limited to authors whose content you may read, often just your own. It fails soft: 200 with zero rows, not an error. So before reporting any corpus finding, compare the distinct authors in your event rows against the distinct `Trace.Author.email` for the same window. One author out of twenty means you surveyed your own usage — say so in the headline. This also makes some questions only half-answerable: `Trace.skillUsesCount` gives you skill invocations per session — and so how many sessions used *any* skill — for every session you can list, but *naming* the skill is content-scoped. **A listed session can still be a stub.** Screening holds some sessions back from everyone but their author — including every session from before 2026-09-01. You see the row and its metadata, but the title is a placeholder derived from the trace id, and there is no eval, turn or event behind it. Don't read placeholder titles as what people worked on, and count stubs before reporting coverage. A session screening hasn't reached yet isn't listed at all, for anyone. Check the window too — if the returned `firstEventAt` values stop well inside the range you asked for, the corpus doesn't span it; widen and report the real range rather than reading a young corpus as a decline.
+**An empty result is ambiguous — the biggest trap in this domain.** Session *metadata* (counts, duration, tool, author, cost) is visible for every session you can list, but session *content* — prompts, tool calls, turn digests, the whole TraceEvent/TraceTurn surface — is limited to authors whose content you may read, often just your own. It fails soft: 200 with zero rows, not an error. So before reporting any corpus finding, compare the distinct authors in your event rows against the distinct `Trace.Author.email` for the same window. One author out of twenty means you surveyed your own usage — say so in the headline. This also makes some questions only half-answerable: `Trace.skillUsesCount` gives you skill invocations per session — and so how many sessions used *any* skill — for every session you can list, but *naming* the skill is content-scoped. **A listed session can still be a stub.** Screening holds some sessions back from everyone but their author. You see the row and its metadata, but the title is a placeholder derived from the trace id, and there is no eval, turn or event behind it. Don't read placeholder titles as what people worked on, and count stubs before reporting coverage. A session screening hasn't reached yet isn't listed at all, for anyone. Check the window too — if the returned `firstEventAt` values stop well inside the range you asked for, the corpus doesn't span it; widen and report the real range rather than reading a young corpus as a decline.
 
 **Rank eval and classification fields yourself.** `evalOverallScore`, `cost`, `complexity`, `taskCategories` and `title` are select-only (the metadata says so per field), so "the worst-scoring sessions" can't be a server-side sort — select over a bounded window and order client-side.
 

@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.5.1] - 2026-10-07
+
+### Fixed
+
+- `ask` AI Traces: screening stubs are no longer described as covering every session before 2026-09-01
+- `ask` AI Traces: `eventCount` defers its field list to the API's errors and states it counts acts only, over the whole session
+- `ask` AI Traces: filtering on `Trace.Issues.id` narrows `Trace.Issues` to the match
+- `ask` AI Traces: `turnIndex` can return another turn's events on sessions spanning more than one day
+- `ask` API reference: `search` ORs its words; `TraceTurn` searches prompt and response text only
+
+### Added
+
+- `ask` AI Traces: the `TraceEventCount` facade
+- `ask` AI Traces: a `jq` recipe for reading field descriptions from the metadata cache
+
+### Changed
+
+- Client meta version bumped to `skill/2026-10-07`
+
 ## [1.5.0] - 2026-09-29
 
 ### Removed

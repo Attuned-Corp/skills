@@ -90,7 +90,7 @@ curl -s -X POST "https://api.span.app/next/assets/query?limit=25" \
 | `timeDimension` | No | Time range and optional granularity |
 | `order` | No | Sort order (`field` + `direction`: `"asc"` or `"desc"`) |
 | `mode` | No | `"groups"` for dimension-based aggregation (see Groups Mode below) |
-| `search` | No | Free-text relevance search (BM25). **Only** the trace facades (`Trace`, `TraceEvent`, `TraceTurn`) accept it; rejected everywhere else, and rejected in `groups` mode. See [domains.md](domains.md) → AI Traces. |
+| `search` | No | Free-text relevance search (BM25). **Only** the trace facades (`Trace`, `TraceEvent`, `TraceTurn`) accept it; rejected everywhere else, and rejected in `groups` mode. Words are ORed and quotes aren't phrases; `TraceTurn` searches prompt and response text only. See [domains.md](domains.md) → AI Traces. |
 
 ### Metric Object
 
@@ -120,7 +120,7 @@ Each metric in the `metrics` array:
   "operator": ">=", "value": 1
 }}
 ```
-`where` fields are bare (no `Trace.` prefix) and limited to `toolChannel`, `toolName`, `repo`, `branch`, `model` with `=`/`IN`; the outer operator is `>` or `>=` only. Rejected on any other facade and in `groups` mode. See [domains.md](domains.md) → AI Traces.
+`where` fields are bare (no `Trace.` prefix) and take `=`/`IN`; the outer operator is `>` or `>=` only. It counts acts only (prompts, responses, tool calls) over the whole session; the 400s name the accepted fields and the alternative for other event types. Sessions considered are capped: check `eventCountTruncated`. Rejected on any other facade and in `groups` mode. See [domains.md](domains.md) → AI Traces.
 
 **Compound filters** — use `"and"` to combine multiple conditions:
 ```json
