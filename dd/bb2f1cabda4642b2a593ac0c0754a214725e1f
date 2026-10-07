@@ -1,0 +1,37 @@
+CHANGELOG.md
+  s_47b7c3a599aab8::t_26932b41938a4d 5-23
+skills/ask/SKILL.md
+  s_b180dd859119e8::t_c8230b9aee970a 138,178
+skills/ask/VERSION
+  s_47b7c3a599aab8::t_762559ec3572f1 1
+skills/ask/references/api-reference.md
+  s_47b7c3a599aab8::t_c2e6adf930082d 93,123
+skills/ask/references/domains.md
+  s_47b7c3a599aab8::t_67b0f6622737bc 66,68-74,84-87,119
+skills/ask/references/workflows.md
+  s_47b7c3a599aab8::t_9d783033087478 69
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ddbb2f1cabda4642b2a593ac0c0754a214725e1f",
+  "prompts": {},
+  "sessions": {
+    "s_47b7c3a599aab8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9e7f1d09-48b4-4f9d-9dea-4a7cefedff30",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Boyan Bonev <boyan@span.app>"
+    },
+    "s_b180dd859119e8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "90939bf7-b8d0-44c7-97e7-4f2ef77d7297",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Boyan Bonev <boyan@span.app>"
+    }
+  }
+}
